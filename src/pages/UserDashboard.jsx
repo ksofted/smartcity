@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Shield, MapPin, Send, CheckCircle, AlertTriangle, Image, Video, Trash2, X } from 'lucide-react';
 
 const MAX_VIDEO_SECONDS = 60;
@@ -26,6 +26,24 @@ export default function UserDashboard() {
   const [submitted, setSubmitted]   = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef();
+
+  // Auto-request GPS on page load
+  useEffect(() => {
+    if (navigator.geolocation) {
+      setGpsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          setGpsCoords({ lat: pos.coords.latitude.toFixed(6), lng: pos.coords.longitude.toFixed(6) });
+          setGpsLoading(false);
+        },
+        () => {
+          setGpsLoading(false);
+          setGpsError('Location access denied. You can type your address instead.');
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    }
+  }, []);
 
   function getGPS() {
     setGpsLoading(true);
@@ -180,7 +198,7 @@ export default function UserDashboard() {
                 {/* Incident type */}
                 <div className="form-group">
                   <label className="form-label">What are you reporting?</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
                     {INCIDENT_TYPES.map(t => (
                       <button
                         key={t.value}
@@ -235,7 +253,7 @@ export default function UserDashboard() {
                     ) : (
                       <div>
                         <button type="button" className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center', fontSize: 13 }} onClick={getGPS} disabled={gpsLoading}>
-                          <MapPin size={13} /> {gpsLoading ? 'Getting your location...' : 'Capture My GPS Location'}
+                          <MapPin size={13} /> {gpsLoading ? 'Getting your location...' : 'Retry GPS'}
                         </button>
                         {gpsError && <div style={{ fontSize: 11, color: '#f87171', marginTop: 6 }}>{gpsError}</div>}
                       </div>
@@ -316,7 +334,7 @@ export default function UserDashboard() {
             </div>
 
             {/* Help section */}
-            <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 12 }}>
               {[
                 { icon: '📞', title: 'Emergency', desc: 'Call 112 for immediate danger' },
                 { icon: '🔒', title: 'Anonymous', desc: 'Your identity is never revealed' },
